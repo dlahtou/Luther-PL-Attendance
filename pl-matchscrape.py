@@ -176,12 +176,12 @@ def add_PL_match(match_id):
     match_df = pd.DataFrame(match_data, index=[match_id])
     print(f'saving match {match_id}')
     with open('PLmatches.csv', 'a') as open_file:
-        match_df.to_csv(open_file, header=False)
+        match_df.to_csv(open_file, header=False, mode='a')
     print('--------')
 
     driver.quit()
 
-match_range = np.arange(5570, 5657)
+match_range = np.arange(5681, 9000)
 with open('PLmatches.csv', 'r') as open_file:
     df = pd.read_csv(open_file, index_col=0)
 index_set = set(df.index.tolist())
