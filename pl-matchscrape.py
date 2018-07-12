@@ -188,7 +188,7 @@ def add_PL_match(match_id):
 
     driver.quit()
 
-match_range = np.arange(6781, 9000)
+match_range = np.arange(6869, 9000)
 with open('PLmatches.csv', 'r') as open_file:
     df = pd.read_csv(open_file, index_col=0)
 index_set = set(df.index.tolist())
