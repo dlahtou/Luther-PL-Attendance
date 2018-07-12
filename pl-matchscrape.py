@@ -122,13 +122,13 @@ def add_PL_match(match_id):
 
     ## following rows can be yellow cards, red cards, and fouls
     for row in stats_table_rows[9:]:
-        if row[2] == "Fouls":
+        if row[1] == "Fouls":
             match_data['home_fouls'] = row[0]
             match_data['away_fouls'] = row[-1]
-        elif row[2] == "Red":
+        elif row[1] == "Red":
             match_data['home_redcards'] = row[0]
             match_data['away_redcards'] = row[-1]
-        elif row[2] == "Yellow":
+        elif row[1] == "Yellow":
             match_data['home_yellowcards'] = row[0]
             match_data['away_yellowcards'] = row[-1]
 
@@ -181,7 +181,15 @@ def add_PL_match(match_id):
 
     driver.quit()
 
-match_range = np.arange(5657, 5707)
+match_range = np.arange(5570, 5657)
+with open('PLmatches.csv', 'r') as open_file:
+    df = pd.read_csv(open_file, index_col=0)
+index_set = set(df.index.tolist())
+if match_range[0] in index_set or match_range[-1] in index_set:
+    print("MATCHES ALREADY IN DATAFRAME")
+    print(f'current match records: {min(index_set)} to {max(index_set)}')
+    quit()
+del(df)
 for matchnum in match_range:
     time.sleep(3)
     add_PL_match(matchnum)
