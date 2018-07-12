@@ -28,7 +28,10 @@ with open('team_aliases_dict.pkl', 'rb') as open_file:
 def add_PL_match(match_id):
     print(datetime.now().time().strftime('%H:%M:%S'))
     print(f"opening match {match_id}")
-    driver = webdriver.Firefox(firefox_options=options)
+    try:
+        driver = webdriver.Firefox(firefox_options=options)
+    except:
+        driver = webdriver.Chrome(chromedriver) # for mac 
     driver.get(f"https://www.premierleague.com/match/{match_id}")
 
     # create dataframe dict
