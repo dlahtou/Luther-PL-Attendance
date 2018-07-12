@@ -9,6 +9,7 @@ from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException
 import pickle as pkl
 import time
 from pprint import pprint
@@ -65,7 +66,10 @@ def add_PL_match(match_id):
     match_data['match_timestamp'] = driver.find_element_by_xpath(minfo_selector + '/div[@class="matchDate renderMatchDateContainer"]').get_attribute("data-kickoff")
     match_data['match_referee'] = driver.find_element_by_xpath(minfo_selector + '/div[@class="referee"]').text
     match_data['match_stadium'] = driver.find_element_by_xpath(minfo_selector + '/div[@class="stadium"]').text
-    match_data['match_attendance'] = driver.find_element_by_xpath(minfo_selector + '/div[@class="attendance hide-m"]').text
+    try:
+        match_data['match_attendance'] = driver.find_element_by_xpath(minfo_selector + '/div[@class="attendance hide-m"]').text
+    except NoSuchElementException:
+        match_data['match_attendance'] = 'nan'
 
     #cause loading of stats table by clicking on tab
     stats_button_selector = '//ul[@class="tablist"]/li[contains(text(), "Stats")]'
@@ -184,7 +188,7 @@ def add_PL_match(match_id):
 
     driver.quit()
 
-match_range = np.arange(5681, 9000)
+match_range = np.arange(6781, 9000)
 with open('PLmatches.csv', 'r') as open_file:
     df = pd.read_csv(open_file, index_col=0)
 index_set = set(df.index.tolist())
@@ -194,5 +198,5 @@ if match_range[0] in index_set or match_range[-1] in index_set:
     quit()
 del(df)
 for matchnum in match_range:
-    time.sleep(3)
+    #time.sleep(3)
     add_PL_match(matchnum)
