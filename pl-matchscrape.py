@@ -22,23 +22,20 @@ import os
 # open match page
 options = Options()
 final_match_id = 5946
+try:
+    driver = webdriver.Firefox(firefox_options=options)
+except:
+    driver = webdriver.Chrome(chromedriver) # for mac 
 # team aliases dict is used to associate team names with shortened versions
 with open('team_aliases_dict.pkl', 'rb') as open_file:
     team_aliases = pkl.load(open_file)
 
-def attend_format(row):
-    if isinstance(row['match_attendance'], str):
-        return int(row['match_attendance'].split(' ')[1].replace(',', ''))
-    else:
-        return np.nan
+def attend_format(attendstring):
+    return int(attendstring.split(' ')[1].replace(',', ''))
 
 def add_PL_match(match_id):
     print(datetime.now().time().strftime('%H:%M:%S'))
     print(f"opening match {match_id}")
-    try:
-        driver = webdriver.Firefox(firefox_options=options)
-    except:
-        driver = webdriver.Chrome(chromedriver) # for mac 
     driver.get(f"https://www.premierleague.com/match/{match_id}")
 
     # create dataframe dict
@@ -70,12 +67,17 @@ def add_PL_match(match_id):
     except:
         print("couldn't find match date after 10 seconds!")
     match_data['match_timestamp'] = driver.find_element_by_xpath(minfo_selector + '/div[@class="matchDate renderMatchDateContainer"]').get_attribute("data-kickoff")
-    match_data['match_referee'] = driver.find_element_by_xpath(minfo_selector + '/div[@class="referee"]').text
+    try:
+        match_data['match_referee'] = driver.find_element_by_xpath(minfo_selector + '/div[@class="referee"]').text
+    except NoSuchElementException:
+        print("no referee found! skipping -- likely not a premier league game")
+        return
     match_data['match_stadium'] = driver.find_element_by_xpath(minfo_selector + '/div[@class="stadium"]').text
     try:
-        match_data['match_attendance'] = driver.find_element_by_xpath(minfo_selector + '/div[@class="attendance hide-m"]').text
+        temp_attendstring = driver.find_element_by_xpath(minfo_selector + '/div[@class="attendance hide-m"]').text
+        match_data['match_attendance'] = attend_format(temp_attendstring)
     except NoSuchElementException:
-        match_data['match_attendance'] = 'nan'
+        match_data['match_attendance'] = np.nan
 
     #cause loading of stats table by clicking on tab
     stats_button_selector = '//ul[@class="tablist"]/li[contains(text(), "Stats")]'
@@ -160,6 +162,7 @@ def add_PL_match(match_id):
         )
     except:
         print("couldn't find hometeam tablerow in league table after 10 seconds!")
+        return
 
     if len(driver.find_elements_by_xpath('//tbody[@class="standingEntriesContainer"]/tr')) < 20:
         print("Fewer than 20 teams in league!")
@@ -187,17 +190,14 @@ def add_PL_match(match_id):
     match_data['matchweek'] = driver.find_element_by_xpath('//span[@class="matchweekAmountContainer"]').text
 
     match_df = pd.DataFrame(match_data, index=[match_id])
-    
-    match_df['match_attendance'] = match_df.apply(attend_format, axis=1)
 
     print(f'saving match {match_id}')
     with open('PLmatches.csv', 'a') as open_file:
         match_df.to_csv(open_file, header=False, mode='a')
     print('--------')
 
-    driver.quit()
 
-match_range = np.arange(7265, 9000)
+match_range = np.arange(9231, 9700)
 with open('PLmatches.csv', 'r') as open_file:
     df = pd.read_csv(open_file, index_col=0)
 index_set = set(df.index.tolist())
