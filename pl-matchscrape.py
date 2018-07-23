@@ -200,14 +200,14 @@ def add_PL_match(match_id):
     print('--------')
 
 
-match_range = [22468]
-'''with open('PLmatches.csv', 'r') as open_file:
+match_range = range(7467,7477)
+with open('PLmatches.csv', 'r') as open_file:
     df = pd.read_csv(open_file, index_col=0)
 index_set = set(df.index.tolist())
 if match_range[0] in index_set or match_range[-1] in index_set:
     print("MATCHES ALREADY IN DATAFRAME")
     print(f'current match records: {min(index_set)} to {max(index_set)}')
-    quit()'''
+    quit()
 for matchnum in match_range:
     #time.sleep(3)
     add_PL_match(matchnum)
